@@ -6,18 +6,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="center">
+<body>
 
-<div class="card">
-    <h2>💬 TalkZing</h2>
+<div class="login-container">
+    <div class="login-card">
+        <h1>💬 TalkZing</h1>
+        <p class="subtitle">Sign in to start chatting</p>
 
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Password">
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Password">
 
-    <button type="button" onclick="signup()">Sign Up</button>
-    <button type="button" onclick="login()">Login</button>
+        <button onclick="signup()">Sign Up</button>
+        <button class="login-btn" onclick="login()">Login</button>
 
-    <p id="msg"></p>
+        <p id="msg"></p>
+    </div>
 </div>
 
 <script type="module" src="js/script.js"></script>
