@@ -1,37 +1,30 @@
-import { auth, database, RecaptchaVerifier } from "./firebase.js";
-import { signInWithPhoneNumber } from
-"https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+import { auth, database } from "./firebase.js";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 import { ref, set } from
 "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
-window.recaptchaVerifier = new RecaptchaVerifier(
-  'recaptcha',
-  { size: 'normal' },
-  auth
-);
+window.signup = function () {
+  const emailVal = email.value;
+  const passVal = password.value;
 
-let confirmationResult;
+  createUserWithEmailAndPassword(auth, emailVal, passVal)
+    .then((cred) => {
+      const uid = cred.user.uid;
 
-window.sendOTP = function () {
-  const phoneNumber = phone.value;
+      set(ref(database, "users/" + uid), {
+        email: emailVal
+      });
 
-  signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier)
-    .then(result => {
-      confirmationResult = result;
-      msg.innerText = "OTP sent successfully";
+      location.href = "chat.html";
     })
     .catch(err => alert(err.message));
 };
 
-window.verifyOTP = function () {
-  confirmationResult.confirm(otp.value).then(result => {
-    const user = result.user;
-
-    set(ref(database, "users/" + user.uid), {
-      name: name.value,
-      phone: user.phoneNumber
-    });
-
-    location.href = "chat.html";
-  }).catch(() => alert("Invalid OTP"));
+window.login = function () {
+  signInWithEmailAndPassword(auth, email.value, password.value)
+    .then(() => location.href = "chat.html")
+    .catch(err => alert(err.message));
 };
