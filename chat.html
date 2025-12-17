@@ -6,18 +6,31 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="css/chat.css">
 </head>
+
 <body>
 
 <div class="chat-header">
-    <span>💬 TalkZing</span>
+    <span id="chatTitle">💬 TalkZing</span>
     <button onclick="logout()">Logout</button>
 </div>
 
-<div class="chat-box" id="chatBox"></div>
+<div class="main">
 
-<div class="chat-input">
-    <input type="text" id="message" placeholder="Type a message">
-    <button onclick="sendMessage()">➤</button>
+    <!-- USERS -->
+    <div class="users" id="userList">
+        <h4>Contacts</h4>
+    </div>
+
+    <!-- CHAT -->
+    <div class="chat-area">
+        <div class="chat-box" id="chatBox"></div>
+
+        <div class="chat-input">
+            <input type="text" id="message" placeholder="Type a message">
+            <button onclick="sendMessage()">➤</button>
+        </div>
+    </div>
+
 </div>
 
 <script type="module" src="js/chat.js"></script>

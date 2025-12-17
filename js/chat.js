@@ -1,57 +1,109 @@
-import { auth, database } from "./firebase.js";
-import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
-import { ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+import { getAuth, onAuthStateChanged, signOut }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+  getDatabase, ref, set, push,
+  onChildAdded, onValue, onDisconnect
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+import { app } from "./firebase.js";
+
+const auth = getAuth(app);
+const db = getDatabase(app);
 
 const chatBox = document.getElementById("chatBox");
-const messageInput = document.getElementById("message");
+const userList = document.getElementById("userList");
+const chatTitle = document.getElementById("chatTitle");
 
-let userEmail = "";
+let currentUser = "";
+let selectedUser = "";
+let chatId = "";
 
+/* LOGIN CHECK */
 onAuthStateChanged(auth, user => {
-    if (!user) {
-        window.location.href = "index.html";
-    } else {
-        userEmail = user.email.replace(".", "_");
-        loadMessages();
-    }
+  if (!user) {
+    location.href = "index.html";
+  } else {
+    currentUser = user.email.replace(/\./g, "_");
+
+    set(ref(db, "users/" + currentUser), {
+      email: user.email,
+      online: true
+    });
+
+    onDisconnect(ref(db, "users/" + currentUser + "/online")).set(false);
+
+    loadUsers();
+  }
 });
 
-window.sendMessage = function() {
-    const text = messageInput.value.trim();
-    if (text === "") return;
+/* LOAD USERS */
+function loadUsers() {
+  onChildAdded(ref(db, "users"), snap => {
+    const uid = snap.key;
+    if (uid === currentUser) return;
 
-    const messagesRef = ref(database, "messages");
-    push(messagesRef, {
-        user: userEmail,
-        message: text,
-        time: Date.now()
+    const div = document.createElement("div");
+    div.className = "user";
+
+    const dot = document.createElement("span");
+    dot.className = "status offline";
+
+    const name = document.createElement("span");
+    name.innerText = uid;
+
+    div.appendChild(dot);
+    div.appendChild(name);
+    userList.appendChild(div);
+
+    onValue(ref(db, "users/" + uid + "/online"), s => {
+      dot.className = "status " + (s.val() ? "online" : "offline");
     });
 
-    messageInput.value = "";
+    div.onclick = () => selectUser(uid);
+  });
 }
 
-function loadMessages() {
-    const messagesRef = ref(database, "messages");
-    onChildAdded(messagesRef, snapshot => {
-        const data = snapshot.val();
+/* SELECT USER */
+function selectUser(uid) {
+  selectedUser = uid;
+  chatBox.innerHTML = "";
 
-        const div = document.createElement("div");
-        div.classList.add("message");
+  chatId = [currentUser, selectedUser].sort().join("__");
+  chatTitle.innerText = "💬 Chat with " + selectedUser;
 
-        if (data.user === userEmail) {
-            div.classList.add("sent");
-        } else {
-            div.classList.add("received");
-        }
-
-        div.innerHTML = `<strong>${data.user.replace("_", ".")}</strong><br>${data.message}`;
-        chatBox.appendChild(div);
-        chatBox.scrollTop = chatBox.scrollHeight;
-    });
+  onChildAdded(ref(db, "chats/" + chatId), snap => {
+    const msg = snap.val();
+    const div = document.createElement("div");
+    div.classList.add("message");
+    div.classList.add(msg.from === currentUser ? "sent" : "received");
+    div.innerText = msg.text;
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  });
 }
 
-window.logout = function() {
-    signOut(auth).then(() => {
-        window.location.href = "index.html";
-    });
-}
+/* SEND MESSAGE */
+window.sendMessage = function () {
+  if (!selectedUser) {
+    alert("Select a user");
+    return;
+  }
+
+  const text = document.getElementById("message").value;
+  if (text === "") return;
+
+  push(ref(db, "chats/" + chatId), {
+    from: currentUser,
+    text,
+    time: Date.now()
+  });
+
+  document.getElementById("message").value = "";
+};
+
+/* LOGOUT */
+window.logout = function () {
+  set(ref(db, "users/" + currentUser + "/online"), false);
+  signOut(auth).then(() => location.href = "index.html");
+};
