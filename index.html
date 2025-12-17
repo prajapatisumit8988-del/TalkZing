@@ -1,23 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
 <title>TalkZing - Login</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="center">
+<body>
 
-<div class="card">
-    <h2>💬 TalkZing</h2>
+<div class="login-card">
+  <h2>📱 TalkZing</h2>
 
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Password">
+  <input type="text" id="name" placeholder="Your Name">
+  <input type="tel" id="phone" placeholder="+91XXXXXXXXXX">
 
-    <button type="button" onclick="signup()">Sign Up</button>
-    <button type="button" onclick="login()">Login</button>
+  <div id="recaptcha"></div>
 
-    <p id="msg"></p>
+  <button onclick="sendOTP()">Send OTP</button>
+
+  <input type="text" id="otp" placeholder="Enter OTP">
+  <button onclick="verifyOTP()">Verify & Login</button>
+
+  <p id="msg"></p>
 </div>
 
 <script type="module" src="js/script.js"></script>
